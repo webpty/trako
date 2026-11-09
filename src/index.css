@@ -1,0 +1,122 @@
+/* HeroUI's stylesheet imports Tailwind itself, so this is the only import. */
+@import "@heroui/styles/css";
+/* Pro components ship their own layer, on top of the base styles above. */
+@import "@heroui-pro/react/css";
+
+/* The house rules, set once here rather than on every component: one corner
+   radius everywhere, 10 pixels; form fields with a visible border, since
+   HeroUI's default reads as a hole in the page; the accent is the icon's blue. */
+:root {
+  --radius: 0.625rem;
+  --field-border-width: 1px;
+  --field-border: var(--border);
+  --accent: #1e40af;
+}
+
+.dark {
+  --radius: 0.625rem;
+  --field-border-width: 1px;
+  --field-border: var(--border);
+  --accent: #3b62d6;
+}
+
+body {
+  min-height: 100dvh;
+}
+
+main {
+  padding-top: calc(0.75rem + env(safe-area-inset-top));
+  padding-bottom: calc(2.5rem + env(safe-area-inset-bottom));
+  padding-left: max(1rem, env(safe-area-inset-left));
+  padding-right: max(1rem, env(safe-area-inset-right));
+}
+
+.app-layout__header {
+  padding-top: env(safe-area-inset-top);
+}
+
+main.app-layout__main {
+  padding: 0;
+}
+
+@layer components {
+  /* A card has to read as a card: HeroUI's surface is the page's colour in
+     the light theme, so it needs an edge of its own. */
+  .surface {
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+  }
+
+  .input-otp {
+    justify-content: center;
+  }
+
+  /* Every icon-only button is a circle the height of the others. */
+  .button--icon-only {
+    aspect-ratio: 1;
+    width: auto;
+    padding-inline: 0;
+    border-radius: 9999px;
+  }
+
+  /* Words in a button or a label stay on one line. */
+  .button,
+  .label,
+  .chip {
+    white-space: nowrap;
+  }
+
+  .toast-region--top,
+  .toast-region--top-start,
+  .toast-region--top-end {
+    top: calc(env(safe-area-inset-top) + var(--spacing) * 4);
+  }
+}
+
+/* While the six boxes are showing, the page does not move. */
+html.no-scroll,
+html.no-scroll body {
+  height: 100%;
+  overflow: hidden;
+  overscroll-behavior: none;
+}
+
+/* Nothing shifts when a line of news appears. */
+.reserve-line {
+  min-height: 1.25rem;
+}
+
+.theme-choice,
+.theme-choice .segment__item,
+.theme-choice .segment__indicator {
+  border-radius: 9999px;
+}
+.theme-choice {
+  padding: 4px;
+  gap: 4px;
+}
+.theme-choice .segment__item {
+  width: 52px;
+  height: 36px;
+  padding: 0;
+}
+.theme-choice .segment__item svg {
+  width: 20px;
+  height: 20px;
+}
+
+.wordmark {
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+button:not(:disabled):not([aria-disabled="true"]),
+a[href],
+[role="button"]:not([aria-disabled="true"]) {
+  cursor: pointer;
+}
+
+/* The map fills what the header leaves. */
+.map-page {
+  height: calc(100dvh - 4rem - env(safe-area-inset-top));
+}

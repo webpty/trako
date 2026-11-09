@@ -1,0 +1,54 @@
+name = "trako"
+main = "worker/index.ts"
+compatibility_date = "2026-11-01"
+compatibility_flags = ["nodejs_compat"]
+
+# The whole site is private and lives at the apex.
+#
+# A custom_domain route makes `wrangler dev` present the site as trako.cc,
+# which nothing local can reach. scripts/serve-built.mjs strips the route from
+# the generated config before serving the built Worker.
+routes = [{ pattern = "trako.cc", custom_domain = true }]
+
+[vars]
+SITE_ORIGIN = "https://trako.cc"
+MAIL_DOMAIN = "trako.cc"
+
+# Secrets, set with `wrangler secret put` and never written in this file:
+#   SESSION_SECRET  signs the sign-in codes and links. Rotating it voids any
+#                   code already in the post.
+#   INGEST_SECRET   the relay's key for /api/ingest. The same value sits in
+#                   /etc/trako-relay.env on the relay server; change both.
+
+# Folds new records into the daily figures the dashboard reads.
+[triggers]
+crons = ["*/10 * * * *"]
+
+[assets]
+binding = "ASSETS"
+not_found_handling = "single-page-application"
+run_worker_first = ["/api/*", "/in/*"]
+
+[[d1_databases]]
+binding = "DB"
+database_name = "trako-db"
+database_id = "04729d9c-5ff0-4221-af16-9e88b91be4f6"
+
+# Photos on the settings page.
+[[r2_buckets]]
+binding = "MEDIA"
+bucket_name = "trako-media"
+
+# Sign-in codes, from codes@trako.cc. Wants the domain enabled for sending:
+# `wrangler email sending enable trako.cc`.
+[[send_email]]
+name = "EMAIL"
+
+[[unsafe.bindings]]
+name = "SIGN_IN_LIMIT"
+type = "ratelimit"
+namespace_id = "1001"
+simple = { limit = 20, period = 60 }
+
+[observability]
+enabled = true

@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <link rel="manifest" href="/manifest.webmanifest">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+  <link rel="icon" href="/favicon.png" type="image/png" sizes="64x64">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="color-scheme" content="light dark">
+  <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#0d0d11" media="(prefers-color-scheme: dark)">
+  <meta name="robots" content="noindex, nofollow">
+
+  <!-- Nothing describes the site and there is no card for a pasted link.
+       Anybody who lands here learns the name and nothing else. -->
+
+  <title>trako</title>
+  <script>
+    // Light or dark before anything paints, so nobody sees a flash of the
+    // wrong one. The same rules as src/theme.ts, kept in step by hand.
+    (function () {
+      try {
+        var stored = localStorage.getItem("trako:theme");
+        var dark = stored === "dark" ||
+          (stored !== "light" && matchMedia("(prefers-color-scheme: dark)").matches);
+        document.documentElement.classList.toggle("dark", dark);
+      } catch (e) {
+        // A browser with site data turned off still gets a working page.
+      }
+    })();
+  </script>
+</head>
+
+<body>
+  <div id="root"></div>
+  <script type="module" src="/src/main.tsx"></script>
+</body>
+
+</html>
