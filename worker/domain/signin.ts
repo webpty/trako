@@ -5,7 +5,7 @@
 // account exists.
 
 import type { App } from "../app";
-import { codeLetter } from "../mail/paper";
+import { codeLetter, ICON_ID } from "../mail/paper";
 import { hashCode, mintCode, sign } from "./tokens";
 
 /** How long a code is good for, and how long a session lasts. */
@@ -58,7 +58,8 @@ export async function requestCode(app: App, email: string): Promise<RequestOutco
   // carries the code itself, signed, so opening it spends the same single-use
   // code and nothing extra has to be stored.
   const token = await sign(app.sessionSecret, "signin", `${address}:${code}`);
-  const letter = codeLetter(code, `${app.siteOrigin}/in/${token}`, CODE_MINUTES);
+  const icon = await app.icon().catch(() => null);
+  const letter = codeLetter(code, `${app.siteOrigin}/in/${token}`, CODE_MINUTES, !!icon);
 
   await app.mailer.send({
     to: address,
@@ -67,6 +68,7 @@ export async function requestCode(app: App, email: string): Promise<RequestOutco
     subject: letter.subject,
     text: letter.text,
     html: letter.html,
+    ...(icon ? { inline: [{ content: icon, filename: "trako.png", type: "image/png", contentId: ICON_ID }] } : {}),
   });
 
   return "sent";

@@ -131,6 +131,8 @@ export interface OutgoingMail {
   subject: string;
   text?: string;
   html?: string;
+  /** Pictures carried inside the message, so nothing loads from outside. */
+  inline?: { content: ArrayBuffer; filename: string; type: string; contentId: string }[];
 }
 
 export interface Mailer {

@@ -10,6 +10,17 @@ export class CloudflareMailer implements Mailer {
       subject: mail.subject,
       ...(mail.text ? { text: mail.text } : {}),
       ...(mail.html ? { html: mail.html } : {}),
+      ...(mail.inline?.length
+        ? {
+            attachments: mail.inline.map((file) => ({
+              content: file.content,
+              filename: file.filename,
+              type: file.type,
+              disposition: "inline" as const,
+              contentId: file.contentId,
+            })),
+          }
+        : {}),
     });
   }
 }

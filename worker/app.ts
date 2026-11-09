@@ -43,6 +43,8 @@ export interface App {
   mailDomain: string;
   sessionSecret: string;
   ingestSecret: string | null;
+  /** The site's icon, for the top of a message. Null where it cannot be had. */
+  icon(): Promise<ArrayBuffer | null>;
 }
 
 const clock: Clock = { now: () => new Date() };
@@ -69,5 +71,9 @@ export function build(env: Env): App {
     mailDomain: env.MAIL_DOMAIN,
     sessionSecret: env.SESSION_SECRET,
     ingestSecret: env.INGEST_SECRET || null,
+    icon: async () => {
+      const response = await env.ASSETS.fetch(new Request(`${env.SITE_ORIGIN}/icon-192.png`)).catch(() => null);
+      return response?.ok ? response.arrayBuffer() : null;
+    },
   };
 }

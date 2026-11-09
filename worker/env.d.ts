@@ -25,12 +25,21 @@ declare global {
     name?: string;
   }
 
+  interface SendEmailAttachment {
+    content: string | ArrayBuffer | ArrayBufferView;
+    filename: string;
+    type: string;
+    disposition: "attachment" | "inline";
+    contentId?: string;
+  }
+
   interface SendEmailRequest {
     to: string | SendEmailAddress | (string | SendEmailAddress)[];
     from: string | SendEmailAddress;
     subject: string;
     html?: string;
     text?: string;
+    attachments?: SendEmailAttachment[];
   }
 
   interface SendEmailBinding {
