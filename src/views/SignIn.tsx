@@ -5,11 +5,37 @@ import { StatusLine } from "../bits";
 import { deviceHasOne, signInWithPasskey, supported } from "../passkeys";
 import type { Me } from "../../shared/types";
 
+/** The code step has its own address, /code, and the address the code went
+    to is remembered for as long as the code lasts, so a browser that reloads
+    the page while the code is being copied lands back on the boxes. */
+const WAITING = "trako:code-sent";
+const CODE_MINUTES = 10;
+
+function waitingFor(): string | null {
+  try {
+    const kept = JSON.parse(localStorage.getItem(WAITING) ?? "null") as { email?: string; until?: number } | null;
+    return kept?.email && (kept.until ?? 0) > Date.now() ? kept.email : null;
+  } catch {
+    return null;
+  }
+}
+
+function remember(email: string | null): void {
+  try {
+    if (email) localStorage.setItem(WAITING, JSON.stringify({ email, until: Date.now() + CODE_MINUTES * 60_000 }));
+    else localStorage.removeItem(WAITING);
+  } catch {
+    // Nothing remembered: a reload goes back to the address step.
+  }
+}
+
 /** Two steps: an address, then the six digits sent to it. Nothing on this page
     says what the site is. */
 export default function SignIn({ onSignedIn }: { onSignedIn: (me: Me, withACode: boolean) => void }) {
-  const [step, setStep] = useState<"address" | "code">("address");
-  const [email, setEmail] = useState("");
+  const [step, setStep] = useState<"address" | "code">(() =>
+    location.pathname === "/code" && waitingFor() ? "code" : "address",
+  );
+  const [email, setEmail] = useState(() => waitingFor() ?? "");
   const [code, setCode] = useState("");
   const [busy, setBusy] = useState(false);
   const [problem, setProblem] = useState("");
@@ -22,6 +48,21 @@ export default function SignIn({ onSignedIn }: { onSignedIn: (me: Me, withACode:
     const locked = step === "code";
     document.documentElement.classList.toggle("no-scroll", locked);
     return () => document.documentElement.classList.remove("no-scroll");
+  }, [step]);
+
+  // The page's address follows the step, and the browser's back button takes
+  // the code step away again.
+  useEffect(() => {
+    const wanted = step === "code" ? "/code" : "/";
+    if (location.pathname !== wanted && !location.search) history.replaceState(null, "", wanted);
+    const back = () => {
+      if (location.pathname !== "/code") {
+        setStep("address");
+        setCode("");
+      }
+    };
+    window.addEventListener("popstate", back);
+    return () => window.removeEventListener("popstate", back);
   }, [step]);
 
   // A link from a message that did not work comes back here saying so.
@@ -42,6 +83,8 @@ export default function SignIn({ onSignedIn }: { onSignedIn: (me: Me, withACode:
     setProblem("");
     try {
       await api.askForCode(email);
+      remember(email.trim());
+      history.pushState(null, "", "/code");
       setStep("code");
     } catch (error) {
       complain(error, "The code could not be sent.");
@@ -54,7 +97,10 @@ export default function SignIn({ onSignedIn }: { onSignedIn: (me: Me, withACode:
     setBusy(true);
     setProblem("");
     try {
-      onSignedIn((await api.signIn(email, value)).me, true);
+      const { me } = await api.signIn(email, value);
+      remember(null);
+      history.replaceState(null, "", "/");
+      onSignedIn(me, true);
     } catch (error) {
       setCode("");
       complain(error, "That did not work.");
@@ -70,7 +116,10 @@ export default function SignIn({ onSignedIn }: { onSignedIn: (me: Me, withACode:
     setProblem("");
     try {
       const me = await signInWithPasskey();
-      if (me) onSignedIn(me, false);
+      if (me) {
+        remember(null);
+        onSignedIn(me, false);
+      }
     } catch (error) {
       complain(error, "That passkey was not recognised.");
     } finally {
@@ -137,6 +186,7 @@ export default function SignIn({ onSignedIn }: { onSignedIn: (me: Me, withACode:
             variant="secondary"
             isDisabled={busy}
             onPress={() => {
+              remember(null);
               setCode("");
               setProblem("");
               setStep("address");
