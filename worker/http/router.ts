@@ -7,6 +7,7 @@ import { build, type App } from "../app";
 import { canSee, visibleVehicles } from "../domain/access";
 import { refreshDays } from "../domain/figures";
 import { ingest, isBatch } from "../domain/ingest";
+import { sameSim } from "../../shared/sims";
 import { addOptions, signInOptions, verifyAdd, verifySignIn } from "../domain/passkeys";
 import { redeemCode, requestCode, startSession } from "../domain/signin";
 import { id as makeId } from "../domain/tokens";
@@ -235,6 +236,27 @@ export async function handleApi(request: Request, env: Env): Promise<Response> {
     if (input.personId !== null && !(await app.people.byId(input.personId))) return fail("No such person.", 404);
     await app.vehicles.assign(vehicle.id, input.personId);
     return json({ vehicles: await app.vehicles.all() });
+  }
+
+  if (at(0) === "sims") {
+    if (method === "POST" && path.length === 1) {
+      const input = await body<{ iccid?: string; msisdn?: string }>(request);
+      const iccid = (input?.iccid ?? "").replace(/\s/g, "");
+      const msisdn = (input?.msisdn ?? "").replace(/[\s+]/g, "");
+      if (!/^\d{18,22}$/.test(iccid)) return fail("An ICCID is 18 to 22 digits.");
+      if (!/^\d{6,16}$/.test(msisdn)) return fail("That number does not look right.");
+      if (!(await app.sims.add(iccid, msisdn, app.clock.now().toISOString()))) return fail("That SIM is already on the list.", 409);
+    } else if (method === "DELETE" && path.length === 2) {
+      await app.sims.remove(decodeURIComponent(at(1)));
+    } else if (!(method === "GET" && path.length === 1)) {
+      return fail("No such thing here.", 404);
+    }
+    const trackers = await app.trackers.all();
+    const sims = (await app.sims.all()).map((sim) => {
+      const tracker = trackers.find((t) => sameSim(sim.iccid, t.iccidParts));
+      return { ...sim, imei: tracker?.imei ?? null, vehicleId: tracker?.vehicleId ?? null };
+    });
+    return json({ sims });
   }
 
   if (method === "GET" && at(0) === "trackers" && path.length === 1) {

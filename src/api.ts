@@ -8,6 +8,7 @@ import type {
   Me,
   Person,
   SettingsPatch,
+  Sim,
   StoredRecord,
   Tracker,
   Vehicle,
@@ -69,6 +70,9 @@ export const api = {
   removePerson: (id: string) => call<{ people: Person[] }>(`/api/people/${encodeURIComponent(id)}`, send("DELETE")),
   assignVehicle: (id: string, personId: string | null) =>
     call<{ vehicles: Vehicle[] }>(`/api/vehicles/${encodeURIComponent(id)}`, send("PATCH", { personId })),
+  sims: () => call<{ sims: Sim[] }>("/api/sims"),
+  addSim: (iccid: string, msisdn: string) => call<{ sims: Sim[] }>("/api/sims", send("POST", { iccid, msisdn })),
+  removeSim: (iccid: string) => call<{ sims: Sim[] }>(`/api/sims/${encodeURIComponent(iccid)}`, send("DELETE")),
   trackers: () => call<{ trackers: Tracker[] }>("/api/trackers"),
   placeTracker: (imei: string, vehicleId: string | null) =>
     call<{ trackers: Tracker[]; vehicles: Vehicle[] }>(`/api/trackers/${encodeURIComponent(imei)}`, send("PATCH", { vehicleId })),

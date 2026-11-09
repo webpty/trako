@@ -79,6 +79,8 @@ export const IO = {
   fuelPct: 48,
   fuelTenthsL: 390,
   externalMv: 66,
+  iccid1: 11,
+  iccid2: 14,
 } as const;
 
 /** A value read for people: scaled, with its unit, and text values (the VIN,

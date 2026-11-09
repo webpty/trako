@@ -11,6 +11,7 @@ import type {
   Me,
   Role,
   StoredRecord,
+  Sim,
   Tracker,
   Vehicle,
 } from "../shared/types";
@@ -96,6 +97,14 @@ export interface TrackerStore {
       vehicle at all are given to the new one, so nothing from the first
       connection is lost. */
   place(imei: string, vehicleId: string | null): Promise<boolean>;
+  /** The halves of the ICCID it last reported. */
+  noteSim(imei: string, parts: string): Promise<void>;
+}
+
+export interface SimStore {
+  all(): Promise<Pick<Sim, "iccid" | "msisdn">[]>;
+  add(iccid: string, msisdn: string, now: string): Promise<boolean>;
+  remove(iccid: string): Promise<void>;
 }
 
 export interface RecordStore {

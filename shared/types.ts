@@ -46,6 +46,16 @@ export interface Tracker {
   firstSeenAt: string;
   lastSeenAt: string;
   records: number;
+  /** The halves of its SIM's ICCID as it last sent them, "part1,part2". */
+  iccidParts: string | null;
+}
+
+export interface Sim {
+  iccid: string;
+  msisdn: string;
+  /** The tracker it is in, going by what the trackers report. */
+  imei: string | null;
+  vehicleId: string | null;
 }
 
 export interface Person {

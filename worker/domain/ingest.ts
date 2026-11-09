@@ -3,6 +3,7 @@
 // the days they fall on are marked for their figures to be worked out again.
 
 import { dayOf } from "../../shared/figures";
+import { iccidParts } from "../../shared/sims";
 import type { IncomingBatch, IncomingRecord } from "../../shared/types";
 import type { App } from "../app";
 
@@ -23,6 +24,9 @@ export async function ingest(app: App, batches: IncomingBatch[]): Promise<Ingest
     // a tracker back in range sends a day's records at once.
     const vehicleId = await app.trackers.seen(batch.imei, batch.receivedAt);
     added += await app.records.add(batch.imei, vehicleId, batch.receivedAt, good);
+    // The SIM inside it, from the newest record that says.
+    const parts = [...good].sort((a, b) => b.at.localeCompare(a.at)).map((r) => iccidParts(r.io)).find(Boolean);
+    if (parts) await app.trackers.noteSim(batch.imei, parts);
     if (vehicleId) {
       const days = [...new Set(good.map((r) => dayOf(r.at)))];
       await app.days.markDirty(days.map((day) => ({ vehicleId, day })));

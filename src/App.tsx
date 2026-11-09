@@ -11,6 +11,7 @@ import People from "./views/People";
 import RawData from "./views/RawData";
 import Settings from "./views/Settings";
 import SignIn from "./views/SignIn";
+import Sims from "./views/Sims";
 import Vehicles from "./views/Vehicles";
 import type { Me } from "../shared/types";
 
@@ -68,6 +69,7 @@ export default function App() {
             <Route path="/records" element={<RawData me={me} />} />
             <Route path="/dashboard" element={<Dashboard me={me} />} />
             {admin && <Route path="/vehicles" element={<Vehicles me={me} />} />}
+            {admin && <Route path="/sims" element={<Sims />} />}
             {admin && <Route path="/people" element={<People me={me} />} />}
             <Route path="/settings" element={<Settings me={me} onSaved={setMe} />} />
           </Route>

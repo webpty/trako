@@ -4,7 +4,7 @@
 
 import { D1Challenges, D1Codes, D1Passkeys, D1Sessions } from "./adapters/d1/auth";
 import { D1Days } from "./adapters/d1/days";
-import { D1Trackers, D1Vehicles } from "./adapters/d1/fleet";
+import { D1Sims, D1Trackers, D1Vehicles } from "./adapters/d1/fleet";
 import { D1People } from "./adapters/d1/people";
 import { D1Records } from "./adapters/d1/records";
 import { CloudflareMailer, LoggingMailer } from "./adapters/mail/cloudflare";
@@ -21,6 +21,7 @@ import type {
   Random,
   RecordStore,
   SessionStore,
+  SimStore,
   TrackerStore,
   VehicleStore,
 } from "./ports";
@@ -33,6 +34,7 @@ export interface App {
   passkeys: PasskeyStore;
   vehicles: VehicleStore;
   trackers: TrackerStore;
+  sims: SimStore;
   records: RecordStore;
   days: DayStore;
   media: MediaStore;
@@ -59,6 +61,7 @@ export function build(env: Env): App {
     passkeys: new D1Passkeys(env.DB),
     vehicles: new D1Vehicles(env.DB),
     trackers: new D1Trackers(env.DB),
+    sims: new D1Sims(env.DB),
     records: new D1Records(env.DB),
     days: new D1Days(env.DB),
     media: new R2Media(env.MEDIA),

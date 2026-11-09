@@ -2,7 +2,7 @@
 // computer, a menu button and a sliding sidebar on a phone. A page that wants
 // controls in the header puts them there through <TopBar>.
 
-import { ArrowRightFromSquare, Car, ChartColumn, Display, Gear, ListUl, MapPin, Moon, Persons, Sun } from "@gravity-ui/icons";
+import { AntennaSignal, ArrowRightFromSquare, Car, ChartColumn, Display, Gear, ListUl, MapPin, Moon, Persons, Sun } from "@gravity-ui/icons";
 import { AppLayout } from "@heroui-pro/react/app-layout";
 import { Navbar } from "@heroui-pro/react/navbar";
 import { Segment } from "@heroui-pro/react/segment";
@@ -27,6 +27,7 @@ const NAV: NavItem[] = [
 /** The admin's own pages. */
 const ADMIN: NavItem[] = [
   { href: "/vehicles", label: "Vehicles", icon: Car },
+  { href: "/sims", label: "SIM cards", icon: AntennaSignal },
   { href: "/people", label: "People", icon: Persons },
 ];
 

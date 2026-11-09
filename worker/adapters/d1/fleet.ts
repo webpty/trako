@@ -1,5 +1,5 @@
 import type { Tracker, Vehicle } from "../../../shared/types";
-import type { TrackerStore, VehicleStore } from "../../ports";
+import type { SimStore, TrackerStore, VehicleStore } from "../../ports";
 
 interface VehicleRow {
   id: string;
@@ -53,17 +53,25 @@ export class D1Trackers implements TrackerStore {
   async all(): Promise<Tracker[]> {
     const { results } = await this.db
       .prepare(
-        `SELECT t.imei, t.vehicle_id, t.first_seen_at, t.last_seen_at,
+        `SELECT t.imei, t.vehicle_id, t.first_seen_at, t.last_seen_at, t.iccid_parts,
            (SELECT COUNT(*) FROM records r WHERE r.imei = t.imei) AS records
          FROM trackers t ORDER BY t.vehicle_id IS NOT NULL, t.first_seen_at`,
       )
-      .all<{ imei: string; vehicle_id: string | null; first_seen_at: string; last_seen_at: string; records: number }>();
+      .all<{
+        imei: string;
+        vehicle_id: string | null;
+        first_seen_at: string;
+        last_seen_at: string;
+        iccid_parts: string | null;
+        records: number;
+      }>();
     return results.map((row) => ({
       imei: row.imei,
       vehicleId: row.vehicle_id,
       firstSeenAt: row.first_seen_at,
       lastSeenAt: row.last_seen_at,
       records: row.records,
+      iccidParts: row.iccid_parts,
     }));
   }
 
@@ -77,6 +85,10 @@ export class D1Trackers implements TrackerStore {
       .bind(imei, at, at)
       .first<{ vehicle_id: string | null }>();
     return row?.vehicle_id ?? null;
+  }
+
+  async noteSim(imei: string, parts: string): Promise<void> {
+    await this.db.prepare(`UPDATE trackers SET iccid_parts = ? WHERE imei = ?`).bind(parts, imei).run();
   }
 
   async place(imei: string, vehicleId: string | null): Promise<boolean> {
@@ -93,5 +105,26 @@ export class D1Trackers implements TrackerStore {
         .bind(imei),
     ]);
     return (results[0].meta.changes ?? 0) > 0;
+  }
+}
+
+export class D1Sims implements SimStore {
+  constructor(private readonly db: D1Database) {}
+
+  async all(): Promise<{ iccid: string; msisdn: string }[]> {
+    const { results } = await this.db.prepare(`SELECT iccid, msisdn FROM sims ORDER BY msisdn`).all<{ iccid: string; msisdn: string }>();
+    return results;
+  }
+
+  async add(iccid: string, msisdn: string, now: string): Promise<boolean> {
+    const result = await this.db
+      .prepare(`INSERT OR IGNORE INTO sims (iccid, msisdn, created_at) VALUES (?, ?, ?)`)
+      .bind(iccid, msisdn, now)
+      .run();
+    return (result.meta.changes ?? 0) > 0;
+  }
+
+  async remove(iccid: string): Promise<void> {
+    await this.db.prepare(`DELETE FROM sims WHERE iccid = ?`).bind(iccid).run();
   }
 }
