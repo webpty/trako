@@ -3,6 +3,52 @@
 /* Pro components ship their own layer, on top of the base styles above. */
 @import "@heroui-pro/react/css";
 
+/* Nunito, feedy's typeface, served from the site itself. Used on phones. */
+@font-face {
+  font-family: "Nunito";
+  font-style: normal;
+  font-weight: 400 800;
+  font-display: swap;
+  src: url("/fonts/nunito-latin.woff2") format("woff2");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304,
+    U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: "Nunito";
+  font-style: normal;
+  font-weight: 400 800;
+  font-display: swap;
+  src: url("/fonts/nunito-latin-ext.woff2") format("woff2");
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308,
+    U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113,
+    U+2C60-2C7F, U+A720-A7FF;
+}
+
+/* On phones the type is feedy's: Nunito at its 16-pixel base, and its menu
+   sizes, words at 19 pixels, counts at 15, icons at 22 (David, 9 Nov 2026). */
+@media (width < 64rem) {
+  :root {
+    --font-sans: "Nunito", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  }
+  body {
+    font-family: var(--font-sans);
+  }
+  .sidebar__menu-label,
+  .sidebar__menu-label-text {
+    font-size: 1.1875rem;
+  }
+  .sidebar__group-label {
+    font-size: 0.99rem;
+  }
+  .sidebar__menu-chip .chip {
+    font-size: 0.9375rem;
+  }
+  .sidebar__menu-icon svg {
+    width: 1.4rem;
+    height: 1.4rem;
+  }
+}
+
 /* The house rules, set once here rather than on every component: one corner
    radius everywhere, 10 pixels; form fields with a visible border, since
    HeroUI's default reads as a hole in the page; the accent is the icon's blue. */

@@ -117,11 +117,21 @@ export default function MapPage({ me }: { me: Me }) {
   // The map itself, made once, its style following the theme.
   useEffect(() => {
     if (!box.current) return;
+    // Until there are tracks to show: Panama, Europe and Japan together on a
+    // computer, clear of the panel; Europe on a phone (David, 9 Nov 2026).
+    const wide = window.matchMedia("(min-width: 1024px)").matches;
     const made = new MapLibreMap({
       container: box.current,
       style: styleNow(),
-      center: [-40, 20],
-      zoom: 1.4,
+      ...(wide
+        ? {
+            bounds: [
+              [-84, 4],
+              [146, 60],
+            ] as [[number, number], [number, number]],
+            fitBoundsOptions: { padding: { top: 40, bottom: 40, right: 40, left: 424 } },
+          }
+        : { center: [10, 50] as [number, number], zoom: 3 }),
       // No credits line: the site is private (David, 9 Nov 2026).
       attributionControl: false,
     });
